@@ -9,13 +9,14 @@ import pandas as pd
 pd.set_option('display.max_rows', 50000)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
-pd.set_option('display.height', 1000)
+#pd.set_option('display.height', 1000)
 
 def main(args):
     print args.dipole
     print args.current
     print args.source
 
+    
 
 
 if __name__ == '__main__':
@@ -43,7 +44,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if not args.source or not args.dipole or not arg.current:
+    if not args.source or not args.dipole or not args.current:
         parser.error('Input missing, try --help option')
 
     main(args)
