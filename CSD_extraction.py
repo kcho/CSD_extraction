@@ -12,10 +12,10 @@ pd.set_option('display.width', 1000)
 #pd.set_option('display.height', 1000)
 
 def main(args):
-    print args.source
+    print args.source,'is not used yet'
 
-    region_table = find_location('args.dipole')
-    currentDf = pd.read_csv('args.current')
+    region_table = find_location(args.dipole)
+    currentDf = pd.read_csv(args.current)
     strength_timeseries_list = coord_to_strength_time(currentDf,region_table)
     finalDf = pd.concat(strength_timeseries_list,axis=1)
 
