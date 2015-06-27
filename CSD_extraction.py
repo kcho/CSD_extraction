@@ -124,7 +124,7 @@ def get_info_from_source(sourceCSV):
             elif i.startswith('CDR Dipole'):
                 CDR_dipole_results = i
 
-    return CDR_results_source, SNR, CDR_dipole_results
+    return CDR_results_sources, SNR, CDR_dipole_results
 
 def get_coord_from_source(source):
     coord = re.search(': \((.*)\)mm',CDR_results).group(1).split(', ')
