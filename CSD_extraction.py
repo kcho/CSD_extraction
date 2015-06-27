@@ -12,8 +12,8 @@ pd.set_option('display.width', 1000)
 #pd.set_option('display.height', 1000)
 
 def main(args):
-    print args.source,'is not used yet'
 
+    # dipole table location to strength time series
     region_table = find_location(args.dipole)
     currentDf = pd.read_csv(args.current)
     strength_timeseries_list = coord_to_strength_time(currentDf,region_table)
@@ -28,6 +28,35 @@ def main(args):
             finalDf.to_csv(args.output+'_out.csv')
 
     
+    # source table CDR location to strength time series
+    CDR_results, SNR, CDR_dipole_results = get_info_from_source(args.source)
+    source_CDR_table = get_coord_from_source(CDR_results)
+    strength_timeseries_CDR_source = coord_to_strength_time(currentDf,
+                                                            source_CDR_table)
+    finalDf_CDR_source = pd.concat(strength_timeseries_CDR_source, axis=1)
+
+    if not args.output:
+        finalDf_CDR_source.to_csv(args.current.split('.')[0]+'_source_CDR_out.csv')
+    else:
+        if args.output.endswith('.csv'):
+            finalDf_CDR_source.to_csv('_source_CDR_'+args.output)
+        else:
+            finalDf_CDR_source.to_csv('_source_CDR_'+args.output+'_out.csv')
+
+
+    source_dipole_table = get_coord_from_source(CDR_dipole_results)
+    strength_timeseries_dipole_source = coord_to_strength_time(currentDf,
+                                                            source_dipole_table)
+    finalDf_dipole_source = pd.concat(strength_timeseries_dipole_source, axis=1)
+
+    if not args.output:
+        finalDf_dipole_source.to_csv(args.current.split('.')[0]+'_source_dipole_out.csv')
+    else:
+        if args.output.endswith('.csv'):
+            finalDf_dipole_source.to_csv('_source_dipole_'+args.output)
+        else:
+            finalDf_dipole_source.to_csv('_source_dipole_'+args.output+'_out.csv')
+
 def coord_to_strength_time(currentDf, coordsList):
     '''
     
@@ -78,6 +107,32 @@ def find_location(dipoleCSV):
         region_table[region] = coord_list
     
     return region_table
+
+
+def get_info_from_source(sourceCSV):
+    with open(sourceCSV) as f:
+        source_lines = f.read().split('\\\n\\\n')
+        
+        for i in source_lines:
+            if i.startswith('CDR Results'):
+                CDR_results = i
+                CDR_results_sources = re.search('(\d+) sources',i).group(1)
+
+            elif i.startswith('\tSNR'):
+                SNR = i
+                SNR = SNR.split('\t')[1]
+            elif i.startswith('CDR Dipole'):
+                CDR_dipole_results = i
+
+    return CDR_results, SNR, CDR_dipole_results
+
+def get_coord_from_source(source):
+    coord = re.search(': \((.*)\)mm',CDR_results).group(1).split(', ')
+    coord_float = [float(x) for x in coord]
+    coord_dict = {'x':coord_float[0], 
+                  'y':coord_float[1],
+                  'z':coord_float[2]}
+    return [coord_dict]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
