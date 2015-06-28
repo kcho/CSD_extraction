@@ -112,6 +112,8 @@ def find_location(dipoleCSV):
 def get_info_from_source(sourceCSV):
     with open(sourceCSV) as f:
         source_lines = f.read().split('\\\n\\\n')
+
+        print source_lines
         
         for i in source_lines:
             if i.startswith('CDR Results'):
