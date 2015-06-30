@@ -67,8 +67,10 @@ def coord_to_strength_time(currentDf, coordsList):
             currentDf_location['axis'] = currentDf_location['Latency [ms]'].str.extract('\d+ (\w)')
             currentDf_location = currentDf_location.set_index(['strength','axis']).drop('Latency [ms]',axis=1).stack().unstack(1)
 
-            print coord['x']
+            print coord['x'], coord['y'], coord['z']
+
             matching_strength = currentDf_location[currentDf_location.x==coord['x']][currentDf_location.y==coord['y']][currentDf_location.z==coord['z']]
+
             matching_strength_num = matching_strength.ix[0].name[0]
             strength_timeseries = currentDf_strength.ix[matching_strength_num]
             strength_timeseries['Strength'] = matching_strength_num
@@ -102,18 +104,14 @@ def find_location(dipoleCSV,source_CDR_table):
 
 def get_info_from_source(sourceCSV):
     with open(sourceCSV) as f:
-        source_lines = f.read().split('\\\n\\\n')
-        for i in source_lines:
-            if i.startswith('CDR Results'):
-                CDR_results = i
-                #print CDR_results
-                CDR_results_sources = re.search('(\d+) sources',i).group(1)
+        source = f.read()
 
-    return CDR_results
+    return source
 
 def get_coord_from_source(source):
     #print source,'source'
-    coord = re.search(': \((.*)\)mm',source).group(1).split(', ')
+    coord = re.search('\): \((.*)\)mm',source).group(1).split(', ')
+
     coord_float = [float(x) for x in coord]
     coord_dict = {'x':coord_float[0], 
                   'y':coord_float[1],
