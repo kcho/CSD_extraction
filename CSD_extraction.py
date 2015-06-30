@@ -13,14 +13,25 @@ pd.set_option('display.width', 1000)
 
 def main(args):
 
+    # if args.input present
+    if args.input:
+        current_file = args.input +'_current.csv'
+        dipole_file = args.input +'_dipole.csv'
+        source_file = args.input +'_source.csv'
+    else:
+        current_file = args.current
+        dipole_file = args.dipole
+        source_file = args.source
+
     # dipole table location to strength time series
-    region_table = find_location(args.dipole)
-    currentDf = pd.read_csv(args.current)
+
+    region_table = find_location(dipole_file)
+    currentDf = pd.read_csv(current_file)
     strength_timeseries_list = coord_to_strength_time(currentDf,region_table)
     finalDf = pd.concat(strength_timeseries_list,axis=1)
 
     if not args.output:
-        finalDf.to_csv(args.current.split('.')[0]+'_out.csv')
+        finalDf.to_csv(current_file.split('.')[0]+'_out.csv')
     else:
         if args.output.endswith('.csv'):
             finalDf.to_csv(args.output)
@@ -29,14 +40,14 @@ def main(args):
 
     
     # source table CDR location to strength time series
-    CDR_results, SNR, CDR_dipole_results = get_info_from_source(args.source)
+    CDR_results, SNR, CDR_dipole_results = get_info_from_source(source_file)
     source_CDR_table = get_coord_from_source(CDR_results)
     strength_timeseries_CDR_source = coord_to_strength_time(currentDf,
                                                             source_CDR_table)
     finalDf_CDR_source = pd.concat(strength_timeseries_CDR_source, axis=1)
 
     if not args.output:
-        finalDf_CDR_source.to_csv(args.current.split('.')[0]+'_source_CDR_out.csv')
+        finalDf_CDR_source.to_csv(current_file.split('.')[0]+'_source_CDR_out.csv')
     else:
         if args.output.endswith('.csv'):
             finalDf_CDR_source.to_csv('_source_CDR_'+args.output)
@@ -50,7 +61,7 @@ def main(args):
     finalDf_dipole_source = pd.concat(strength_timeseries_dipole_source, axis=1)
 
     if not args.output:
-        finalDf_dipole_source.to_csv(args.current.split('.')[0]+'_source_dipole_out.csv')
+        finalDf_dipole_source.to_csv(current_file.split('.')[0]+'_source_dipole_out.csv')
     else:
         if args.output.endswith('.csv'):
             finalDf_dipole_source.to_csv('_source_dipole_'+args.output)
@@ -148,6 +159,10 @@ if __name__ == '__main__':
                 Count dicom files in each directory under input 
             '''.format(codeName=os.path.basename(__file__))))
     parser.add_argument(
+        '-i', '--input',
+        help='subject name'
+        )
+    parser.add_argument(
         '-s', '--source',
         help='source file'
         )
@@ -166,7 +181,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if not args.source or not args.dipole or not args.current:
-        parser.error('Input missing, try --help option')
+    if args.input:
+        if not args.dipole or not args.current:
+            print '\tThis will automatically grep'
+            print '\t\t{0}_current.csv'.format(args.input+'_current.csv')
+            print '\t\t{0}_current.csv'.format(args.input+'_dipole.csv')
+            print '\t\t{0}_current.csv'.format(args.input+'_source.csv')
+            
+    else:
+        if not args.dipole or not args.current:
+            parser.error('Input missing, try --help option')
+
+
+    if not args.dipole or not args.current:
+        if not args.input:
+            parser.error('Input missing, try --help option')
 
     main(args)
