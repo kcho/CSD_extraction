@@ -21,8 +21,10 @@
     CSD_extraction -s source_file.csv -c current_file.csv -d dipole_file.csv -o out.csv
 
 
+    CSD_extraction -i kcho
+
+
 ## Updates needed
 
-- source file is not used yet
 - printing stage progression is needed
 - options for choosing dipole, source dipole or source current is needed.
