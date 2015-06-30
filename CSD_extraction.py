@@ -31,7 +31,8 @@ def main(args):
 
     # Read files + get location + add source_CDR location
     region_table = find_location(dipole_file,source_CDR_table)
-    print region_table
+
+    # Read current CSV
     currentDf = pd.read_csv(current_file)
 
     strength_timeseries_list = coord_to_strength_time(currentDf,region_table)
