@@ -9,6 +9,7 @@ import pandas as pd
 pd.set_option('display.max_rows', 50000)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
+pd.options.mode.chained_assignment = None  # default='warn'
 #pd.set_option('display.height', 1000)
 
 def main(args):
@@ -56,6 +57,14 @@ def coord_to_strength_time(currentDf, coordsList):
     strength_timeseries_list = []
     num = 1
     for region, coords in coordsList.iteritems():
+        print
+
+        # for clean print of regions
+        if region.startswith(' '):
+            print region[1:]
+        else:
+            print region
+
         for coord in coords:
             currentDf_strength = currentDf[currentDf['Latency [ms]'].str.startswith('Strength')]
             currentDf_strength['strength'] = currentDf_strength['Latency [ms]'].str.extract('Strength (\d+)')
@@ -67,9 +76,12 @@ def coord_to_strength_time(currentDf, coordsList):
             currentDf_location['axis'] = currentDf_location['Latency [ms]'].str.extract('\d+ (\w)')
             currentDf_location = currentDf_location.set_index(['strength','axis']).drop('Latency [ms]',axis=1).stack().unstack(1)
 
-            print coord['x'], coord['y'], coord['z']
 
-            matching_strength = currentDf_location[currentDf_location.x==coord['x']][currentDf_location.y==coord['y']][currentDf_location.z==coord['z']]
+            #matching_strength = currentDf_location[currentDf_location.x==coord['x']][currentDf_location.y==coord['y']][currentDf_location.z==coord['z']]
+            matching_strength_x = currentDf_location[currentDf_location.x==coord['x']]
+            matching_strength_x_y = matching_strength_x[matching_strength_x.y==coord['y']]
+            matching_strength = matching_strength_x_y[matching_strength_x_y.z==coord['z']]
+
 
             #print matching_strength
             try:
@@ -83,8 +95,9 @@ def coord_to_strength_time(currentDf, coordsList):
                 strength_timeseries.name = num
                 strength_timeseries_list.append(strength_timeseries)
                 num += 1
+                print '\t', coord['x'], coord['y'], coord['z']
             except:
-                print coord['x'], coord['y'], coord['z'], 'is missing ***'
+                print '\t', coord['x'], coord['y'], coord['z'], 'is missing in the current.csv***'
 
     return strength_timeseries_list
 
