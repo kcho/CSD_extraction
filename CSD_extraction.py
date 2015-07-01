@@ -71,16 +71,21 @@ def coord_to_strength_time(currentDf, coordsList):
 
             matching_strength = currentDf_location[currentDf_location.x==coord['x']][currentDf_location.y==coord['y']][currentDf_location.z==coord['z']]
 
-            matching_strength_num = matching_strength.ix[0].name[0]
-            strength_timeseries = currentDf_strength.ix[matching_strength_num]
-            strength_timeseries['Strength'] = matching_strength_num
-            strength_timeseries['Region'] = region
-            strength_timeseries['x [mm]'] = coord['x']
-            strength_timeseries['y [mm]'] = coord['y']
-            strength_timeseries['z [mm]'] = coord['z']
-            strength_timeseries.name = num
-            strength_timeseries_list.append(strength_timeseries)
-            num += 1
+            #print matching_strength
+            try:
+                matching_strength_num = matching_strength.ix[0].name[0]
+                strength_timeseries = currentDf_strength.ix[matching_strength_num]
+                strength_timeseries['Strength'] = matching_strength_num
+                strength_timeseries['Region'] = region
+                strength_timeseries['x [mm]'] = coord['x']
+                strength_timeseries['y [mm]'] = coord['y']
+                strength_timeseries['z [mm]'] = coord['z']
+                strength_timeseries.name = num
+                strength_timeseries_list.append(strength_timeseries)
+                num += 1
+            except:
+                print coord['x'], coord['y'], coord['z'], 'is missing ***'
+
     return strength_timeseries_list
 
 
