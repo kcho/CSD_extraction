@@ -5,6 +5,7 @@ import re
 import argparse
 import textwrap
 import pandas as pd
+import nibabel as nib
 
 pd.set_option('display.max_rows', 50000)
 pd.set_option('display.max_columns', 500)
@@ -13,6 +14,10 @@ pd.options.mode.chained_assignment = None  # default='warn'
 #pd.set_option('display.height', 1000)
 
 def main(args):
+
+    talairachImg = '/ccnc_bin/CSD_extraction/talairach.nii'
+    f = nib.load(talairachImg)
+    data = f.get_data()
 
     # If args.input present
     if args.input:
@@ -25,13 +30,13 @@ def main(args):
         source_file = args.source
 
     # Get information from the source file
-    CDR_results = get_info_from_source(source_file)
+    #CDR_results = get_info_from_source(source_file)
 
     # returns dict eg) {'x': 13,'y':-2,'z':60}
-    source_CDR_table = get_coord_from_source(CDR_results) 
+    #source_CDR_table = get_coord_from_source(CDR_results) 
 
     # Read files + get location + add source_CDR location
-    region_table = find_location(dipole_file,source_CDR_table)
+    #region_table = find_location(dipole_file,source_CDR_table)
 
     # Read current CSV
     currentDf = pd.read_csv(current_file)
@@ -152,6 +157,11 @@ if __name__ == '__main__':
         help='subject name'
         )
     parser.add_argument(
+        '-l', '--lobe',
+        help='select lobe; T, F, P + there will be more coming. Contact Kevin',
+        default='T'
+        )
+    parser.add_argument(
         '-s', '--source',
         help='source file'
         )
@@ -169,6 +179,7 @@ if __name__ == '__main__':
         )
 
     args = parser.parse_args()
+
 
     if args.input:
         if not args.dipole or not args.current:
