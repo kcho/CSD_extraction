@@ -1,8 +1,7 @@
 # CSD_extraction
 ----------------
 
-
-1. Extract x, y, z coordinates from all ROIs in dipole csv, source csv file
+1. Extract x, y, z coordinates from all ROIs in dipole csv, source csv file created from Curry
 2. Find the matching strength in currnet csv file
 3. Extract the time series
 4. Save into a csv file
@@ -20,11 +19,11 @@
 
     CSD_extraction -s source_file.csv -c current_file.csv -d dipole_file.csv -o out.csv
 
+or
 
     CSD_extraction -i kcho
 
 
 ## Updates needed
-
 - printing stage progression is needed
 - options for choosing dipole, source dipole or source current is needed.
