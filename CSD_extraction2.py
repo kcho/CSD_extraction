@@ -78,13 +78,16 @@ def main(args):
         toSave.to_csv(nameToSave)
 
     # GyrusROI data subset save
-    gyrusList = ['Superior Frontal Gyrus', 'Middle Frontal Gyrus', 
+    gyrusListAll = allData.Gyrus.unique()
+    gyrusListWanted = ['Superior Frontal Gyrus', 'Middle Frontal Gyrus', 
                  'Inferior Frontal Gyrus', 'Superior Temporal Gyrus',
                  'Transverse Temporal Gyrus', 'Middle Temporal Gyrus',
                  'Inferior Temporal Gyrus', 'Angular Gyrus',
                  'Supramarginal Gyrus', 'Superior Parietal Lobule']
+    gyrusListCheck = [x for x in gyrusListWanted if x in gyrusListAll]
+
     gb = allData.groupby('Gyrus')
-    gyrusData = pd.concat([gb.get_group(x) for x in gyrusList])
+    gyrusData = pd.concat([gb.get_group(x) for x in gyrusListCheck])
 
     for side in ['Right','Left']:
         toSave = gyrusData[gyrusData.Side==side][newCol].sort(sortList)
