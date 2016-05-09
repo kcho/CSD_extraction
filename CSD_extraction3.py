@@ -33,6 +33,7 @@ def main(args):
     for side_gyrus_name, table in gb:
         if side_gyrus_name[1] in gyrus_wanted:
             print side_gyrus_name, table[table.columns[8:]].max().max()
+            print table[table.columns[8:]].max().idxmax() 
 
 
 if __name__ == '__main__':
