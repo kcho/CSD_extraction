@@ -30,8 +30,10 @@ def main(args):
     # Make Talairach map between
     #   coordinate : name of the structure
     # -----------------------------------------------------
-    talairachNii = '/ccnc_bin/CSD_extraction/talairach.nii'
-    talairachMap = '/usr/local/fsl/data/atlases/Talairach.xml'
+    #talairachNii = '/ccnc_bin/CSD_extraction/talairach.nii'
+    #talairachMap = '/usr/local/fsl/data/atlases/Talairach.xml'
+    talairachNii = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'talairach.nii')
+    talairachMap = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Talairach.xml')
     global data, newDict
     data, newDict = makeTalairachDB(talairachNii, talairachMap)
 
@@ -58,6 +60,7 @@ def main(args):
     df['Broadmann'] = df.lobe.str[4]
     # Only select Gray Matter
     allData = df[df.Matter=='Gray Matter']
+
     #print allData.describe()
 
 
@@ -67,23 +70,29 @@ def main(args):
     # Make new columns
     timeCol = [x for x in df.columns if re.search('\d',x)]
     newCol = ['strength','coord','Side','Lobe','Gyrus','Matter','Broadmann'] + timeCol
+    sortList = ['Side', 'Lobe', 'Gyrus', 'strength']
+
+    nameToSave = re.sub('_out.csv','_all_out.csv', args.output)
+    allData[newCol].sort(sortList).to_csv(nameToSave)
 
     # Lobe data subset save
-    sortList = ['Side', 'Lobe', 'Gyrus', 'strength']
     for lobe_wanted in ['Temporal Lobe', 'Frontal Lobe', 'Parietal Lobe']:
         toSave = allData[allData.Lobe==lobe_wanted][newCol].sort(sortList)
         nameToSave = re.sub('_out.csv',
                             '_{0}_out.csv'.format(lobe_wanted.split(' ')[0].lower()),
                             args.output)
-        toSave.to_csv(nameToSave)
+        #toSave.to_csv(nameToSave)
 
     # GyrusROI data subset save
     gyrusListAll = allData.Gyrus.unique()
-    gyrusListWanted = ['Superior Frontal Gyrus', 'Middle Frontal Gyrus', 
-                 'Inferior Frontal Gyrus', 'Superior Temporal Gyrus',
-                 'Transverse Temporal Gyrus', 'Middle Temporal Gyrus',
-                 'Inferior Temporal Gyrus', 'Angular Gyrus',
-                 'Supramarginal Gyrus', 'Superior Parietal Lobule']
+    #print gyrusListAll
+    gyrusListWanted = ['Cingulate Gyrus', 'Medial Frontal Gyrus', 'Superior Frontal Gyrus', 'Middle Frontal Gyrus', 'Inferior Frontal Gyrus', 'Transverse Temporal Gyrus', 'Angular Gyrus', 'Fusiform Gyrus']
+
+    #gyrusListWanted = ['Superior Frontal Gyrus', 'Middle Frontal Gyrus', 
+                 #'Inferior Frontal Gyrus', 'Superior Temporal Gyrus',
+                 #'Transverse Temporal Gyrus', 'Middle Temporal Gyrus',
+                 #'Inferior Temporal Gyrus', 'Angular Gyrus',
+                 #'Supramarginal Gyrus', 'Superior Parietal Lobule']
     gyrusListCheck = [x for x in gyrusListWanted if x in gyrusListAll]
 
     gb = allData.groupby('Gyrus')
@@ -94,7 +103,8 @@ def main(args):
         nameToSave = re.sub('_out.csv',
                             '_gyrus_{0}_out.csv'.format(side.lower()),
                             args.output)
-        toSave.to_csv(nameToSave)
+        #toSave.to_csv(nameToSave)
+
 
     print 'Completed'
 

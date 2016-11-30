@@ -21,19 +21,34 @@ def main(args):
     # Load current data
     # -----------------------------------------------------
     # current file to read
-    gyrus_wanted = ['Superior Temporal Gyrus', 'Middle Temporal Gyrus', 'Transverse Temporal Gyrus']
+    #gyrus_wanted = ['Superior Temporal Gyrus', 'Middle Temporal Gyrus', 'Transverse Temporal Gyrus']
+    # 2016_11_30
+    gyrus_wanted = ['Cingulate Gyrus', 'Medial Frontal Gyrus', 'Superior Frontal Gyrus', 'Middle Frontal Gyrus', 'Inferior Frontal Gyrus', 'Transverse Temporal Gyrus', 'Angular Gyrus', 'Fusiform Gyrus']
 
-    current_csv = args.input
+    if args.input:
+        current_csv = args.input
+        print find_max(csv, gyrus_wanted)
+    elif args.list:
+        outData = {}
+        for csvFileLoc in args.list:
+            outData[csvFileLoc] =  find_max(csvFileLoc, gyrus_wanted)
+        df = pd.DataFrame(outData).T
+        df.to_csv('prac.csv')
 
+def find_max(csv, gyrus_wanted):
     # read the current file
-    df_raw = pd.read_csv(current_csv)
+    df_raw = pd.read_csv(csv)
 
     gb = df_raw.groupby(['Side','Gyrus'])
-
+    
+    maxCSD  = {}
     for side_gyrus_name, table in gb:
         if side_gyrus_name[1] in gyrus_wanted:
-            print side_gyrus_name, table[table.columns[8:]].max().max()
-            print table[table.columns[8:]].max().idxmax() 
+            #maxCSD[side_gyrus_name] = side_gyrus_name[0], side_gyrus_name[1], table[table.columns[8:]].max().max(), table[table.columns[8:]].max().idxmax() 
+            maxCSD[side_gyrus_name] = table[table.columns[8:]].max().max()
+
+    print maxCSD
+    return maxCSD
 
 
 if __name__ == '__main__':
@@ -52,6 +67,13 @@ if __name__ == '__main__':
         '-i', '--input',
         help='Input csv file'
         )
+
+    parser.add_argument(
+        '-l', '--list',
+        help='Input csv file list',
+        nargs='+'
+        )
+
     args = parser.parse_args()
 
     main(args)
