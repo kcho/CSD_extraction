@@ -7,6 +7,8 @@ import os
 from os.path import join
 from xml.dom import minidom
 from nipy.core.api import Image, vox2mni, rollimg, xyz_affine, as_xyz_image
+import argparse
+import textwrap
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -85,10 +87,12 @@ def current_file_preprocessing(csv):
     # Normalsed df
     df_normal = df_info_gb.get_group('Normal')
     df_normal['number'] = df_normal['Latency [ms]'].str.split(' ').str[1].astype('int')
-    df_normal['axis'] = df_normal['Latency [ms]'].str.split(' ').str[2]
-    df_normal = df_normal.pivot_table(index=['info', 'number'], 
-                                      columns='axis', 
-                                      values=[x for x in df_normal.columns if re.search('\d',x)])
+    df_normal = df_normal.drop('Latency [ms]', axis=1)
+    #df_normal['axis'] = df_normal['Latency [ms]'].str.split(' ').str[2]
+    #df_normal = df_normal.pivot_table(index=['info', 'number'], 
+                                      #columns='axis', 
+                                      #values=[x for x in df_normal.columns if re.search('\d',x)])
+
     # Location df
     df_location = df_info_gb.get_group('Location')
     df_location['number'] = df_location['Latency [ms]'].str.split(' ').str[1].astype('int')
@@ -113,15 +117,24 @@ def current_file_preprocessing(csv):
                                     df_strength,
                                     on='number', how='inner')
 
-    return df_strength_location, df_normal
+    df_norm_strength_location = pd.merge(df_location.reset_index()[['number','x','y','z','voxel_number']],
+                                         df_normal,
+                                         on='number', how='inner')
+
+    return df_strength_location, df_norm_strength_location
 
 def get_current_vector(csv_location):
     a,b = current_file_preprocessing(csv_location)
+
     strength_df = a[['voxel_number']+[x for x in a.columns if re.search('\d', x)]]
     strength_array = strength_df.values
     subject_vector = strength_array.ravel()
     
-    return subject_vector
+    strength_df_norm = b[['voxel_number']+[x for x in b.columns if re.search('\d', x)]]
+    strength_array_norm = strength_df_norm.values
+    subject_vector_norm = strength_array_norm.ravel()
+
+    return subject_vector, subject_vector_norm
 
 def peak_preprocessing(textfile):
     df = pd.read_csv(text_data_loc, #skipfooter=1,
@@ -142,4 +155,27 @@ def peak_preprocessing(textfile):
     return df_melt.values
 
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=textwrap.dedent('''\
+            {codeName} : Preprocess CSD csv files
+            ========================================
+            '''.format(codeName=os.path.basename(__file__))))
 
+    parser.add_argument(
+        '-c', '--inputCSV',
+        help='csv_location')
+    #parser.add_argument(
+        #'-c', '--count',
+        #help='count files with the ext in each directory',
+        #action='store_true')
+    #parser.add_argument(
+        #'-e', '--extension',
+        #help='Extension to search')
+    args = parser.parse_args()
+
+
+    subject_vector, subject_vector_norm = get_current_vector(args.inputCSV)
+    plt.plot(subject_vector)
+    plt.show()
