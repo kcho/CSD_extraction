@@ -10,6 +10,9 @@ from nipy.core.api import Image, vox2mni, rollimg, xyz_affine, as_xyz_image
 import argparse
 import textwrap
 
+matplotlib.use('TkAgg')  
+
+
 pd.options.mode.chained_assignment = None  # default='warn'
 
 
@@ -139,11 +142,11 @@ def get_current_vector(csv_location):
     return subject_vector, subject_vector_norm
 
 def peak_preprocessing(textfile):
-    df = pd.read_csv(text_data_loc, #skipfooter=1,
-                 sep='\t', 
-                 skiprows=5, 
-                 names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
-                 encoding='ISO-8859-1')
+    df = pd.read_csv(textfile, #skipfooter=1,
+                     sep='\t', 
+                     skiprows=5, 
+                     names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
+                     encoding='ISO-8859-1')
 
     #MGFP1 has only minmax and latency
     df.loc[df['channel']=='MGFP1', 'minmax'] = df.loc[df['channel']=='MGFP1', 'x']
@@ -154,6 +157,7 @@ def peak_preprocessing(textfile):
                       var_name='data', 
                       value_name='value', 
                       value_vars=['minmax', 'latency']).set_index(['channel', 'data']).T
+
     return df_melt.values
 
 
@@ -177,6 +181,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-c', '--inputCSV',
         help='csv_location')
+    parser.add_argument(
+        '-p', '--peaktxt',
+        help='Peak text')
     #parser.add_argument(
         #'-c', '--count',
         #help='count files with the ext in each directory',
@@ -186,9 +193,10 @@ if __name__ == '__main__':
         #help='Extension to search')
     args = parser.parse_args()
 
-
     subject_vector, subject_vector_norm = get_current_vector(args.inputCSV)
-    fig, axes = plt.subplots(ncols=2, figsize=(10,10))
+    peak = peak_preprocessing(args.peaktxt)
+    fig, axes = plt.subplots(ncols=3, figsize=(10,10))
     axes[0].plot(subject_vector)
     axes[1].plot(subject_vector_norm)
+    axes[2].plot(peak.T)
     plt.show()
