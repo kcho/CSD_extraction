@@ -82,6 +82,13 @@ def current_file_preprocessing(csv):
     df_strength['number'] = df_strength['Latency [ms]'].str.split(' ').str[1].astype('int')
     df_strength = df_strength.drop('Latency [ms]', axis=1)
     
+    # Normalsed df
+    df_normal = df_info_gb.get_group('Normal')
+    df_normal['number'] = df_normal['Latency [ms]'].str.split(' ').str[1].astype('int')
+    df_normal['axis'] = df_normal['Latency [ms]'].str.split(' ').str[2]
+    df_normal = df_normal.pivot_table(index=['info', 'number'], 
+                                      columns='axis', 
+                                      values=[x for x in df_normal.columns if re.search('\d',x)])
     # Location df
     df_location = df_info_gb.get_group('Location')
     df_location['number'] = df_location['Latency [ms]'].str.split(' ').str[1].astype('int')
@@ -99,18 +106,13 @@ def current_file_preprocessing(csv):
     df_location['voxel_number'] = df_location.apply(
         lambda row: get_value(HO_cortex, row['x'], row['y'], row['z']), axis=1) 
     
+    
+
     # merge strength with location
     df_strength_location = pd.merge(df_location.reset_index()[['number','x','y','z','voxel_number']],
                                     df_strength,
                                     on='number', how='inner')
-    
-    # Normalsed df
-    df_normal = df_info_gb.get_group('Normal')
-    df_normal['number'] = df_normal['Latency [ms]'].str.split(' ').str[1].astype('int')
-    df_normal['axis'] = df_normal['Latency [ms]'].str.split(' ').str[2]
-    df_normal = df_normal.pivot_table(index=['info', 'number'], 
-                                      columns='axis', 
-                                      values=[x for x in df_normal.columns if re.search('\d',x)])
+
     return df_strength_location, df_normal
 
 def get_current_vector(csv_location):
