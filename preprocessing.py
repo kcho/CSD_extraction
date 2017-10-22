@@ -9,6 +9,7 @@ from xml.dom import minidom
 from nipy.core.api import Image, vox2mni, rollimg, xyz_affine, as_xyz_image
 import argparse
 import textwrap
+import matplotlib
 
 matplotlib.use('TkAgg')  
 
@@ -160,6 +161,18 @@ def peak_preprocessing(textfile):
 
     return df_melt.values
 
+def get_type_group_dict(dataLoc):
+    dirs = os.listdir(dataLoc)
+    groups = ['Ctrl', 'CHR_FU', 'FEP']
+    modalities = ['MMN', 'P300']
+
+    type_group_dict = {}
+    for group in groups:
+        for modality in modalities:
+            type_group_dict['_'.join([modality, group])] = join(dataLoc,
+                                                                [x for x in dirs if group in x and modality in x][0])
+
+    return type_group_dict
 
 if __name__ == '__main__':
     HO_cortex_file_loc = '/usr/local/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr0-1mm.nii.gz'
@@ -193,10 +206,31 @@ if __name__ == '__main__':
         #help='Extension to search')
     args = parser.parse_args()
 
-    subject_vector, subject_vector_norm = get_current_vector(args.inputCSV)
-    peak = peak_preprocessing(args.peaktxt)
-    fig, axes = plt.subplots(ncols=3, figsize=(10,10))
-    axes[0].plot(subject_vector)
-    axes[1].plot(subject_vector_norm)
-    axes[2].plot(peak.T)
-    plt.show()
+    dataLoc = '/Volumes/TOSHIBA EXT'
+    type_group_dict = get_type_group_dict(dataLoc)
+
+    print(type_group_dict)
+
+    for type_group, dataLoc in type_group_dict.items():
+        print(type_group)
+
+        current_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('csv')]
+        
+        prac_vector = get_current_vector(current_files[0])[1]
+        size = prac_vector.shape[0]
+
+        array = np.zeros((len(current_files), size))
+        for num, current_file in enumerate(current_files):
+            print(current_file)
+            subject_vector = get_current_vector(current_file)[1]
+            print(subject_vector.shape)
+            array[num, :] = subject_vector
+        np.savetxt(join(dataLoc, 'all_data.txt'), array)
+
+    #subject_vector, subject_vector_norm = get_current_vector(args.inputCSV)
+    #peak = peak_preprocessing(args.peaktxt)
+    #fig, axes = plt.subplots(ncols=3, figsize=(10,10))
+    #axes[0].plot(subject_vector)
+    #axes[1].plot(subject_vector_norm)
+    #axes[2].plot(peak.T)
+    #plt.show()
