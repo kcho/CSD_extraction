@@ -12,6 +12,8 @@ import textwrap
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
+
+
 def get_layer_name_dict(fsl_xml):
     xmldoc = minidom.parse(fsl_xml)
     itemlist = xmldoc.getElementsByTagName('label')
@@ -156,6 +158,15 @@ def peak_preprocessing(textfile):
 
 
 if __name__ == '__main__':
+    HO_cortex_file_loc = '/usr/local/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr0-1mm.nii.gz'
+    # HO_cortex_file_loc = '/Users/kangik/Dropbox/project/2017_08_23_ERP_machine_learning/brain_template/HCP-MMP1_on_MNI152_ICBM2009a_nlin_hd.nii.gz'
+    HO_cortex = nb.load(HO_cortex_file_loc)
+    HO_cortex_data = HO_cortex.get_data()
+
+    layer_xml = '/usr/local/fsl/data/atlases/HarvardOxford-Cortical.xml'
+    layer_dict = get_layer_name_dict(layer_xml)
+    layer_dict[0] = 'outside'
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent('''\
@@ -177,5 +188,7 @@ if __name__ == '__main__':
 
 
     subject_vector, subject_vector_norm = get_current_vector(args.inputCSV)
-    plt.plot(subject_vector)
+    fig, axes = plt.subplots(ncols=2, figsize=(10,10))
+    axes[0].plot(subject_vector)
+    axes[1].plot(subject_vector_norm)
     plt.show()
