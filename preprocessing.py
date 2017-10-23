@@ -201,33 +201,47 @@ if __name__ == '__main__':
         #help='Extension to search')
     args = parser.parse_args()
 
+    # Data location
     dataLoc = '/Volumes/TOSHIBA EXT'
     type_group_dict = get_type_group_dict(dataLoc)
-
     print(type_group_dict)
 
     for type_group, dataLoc in type_group_dict.items():
         print(type_group)
 
+        # list of csv files in the dataLoc
         current_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('csv')]
         
+        # estimate array size
         prac_vector = get_current_vector(current_files[0])[1]
         size = prac_vector.shape[0]
 
+        # make empty array
         array = np.zeros((len(current_files), size))
-        if isfile(join(dataLoc, 'all_data.txt')):
-            pass
-        else:
+
+        # if the type_group has merged data available
+        if not isfile(join(dataLoc, 'all_data.txt')):
+            # for every current_file in the type_group location
             for num, current_file in enumerate(current_files):
                 print(current_file)
                 current_file_root = dirname(current_file)
                 file_name = basename(current_file)
-                if not isfile(join(current_file_root, file_name+'_clean.txt')):
+                array_file = join(current_file_root, file_name+'_clean.txt')
+
+                if not isfile(array_file):
+                    print('subject vector will be estimated')
                     subject_vector = get_current_vector(current_file)[1]
-                    np.savetxt(join(current_file_root, file_name+'_clean.txt'), subject_vector)
+                    np.savetxt(array_file, subject_vector)
                 else:
-                    subject_vector = np.loadtxt(join(current_file_root, file_name+'_clean.txt'))
-                print(subject_vector.shape)
-                array[num, :] = subject_vector
+                    print('subject vector will be loaded')
+                    subject_vector = np.loadtxt(array_file)
+
+                # concatenate the subject vector into the array
+                try:
+                    array[num, :] = subject_vector
+                except:
+                    print(current_file + ' has different size')
+
+            #merge all data from the subjects in the dataLoc
             np.savetxt(join(dataLoc, 'all_data.txt'), array)
 
