@@ -4,19 +4,14 @@ import nibabel as nb
 import matplotlib.pyplot as plt
 import re
 import os
-from os.path import join
+from os.path import join, dirname, basename, isfile
 from xml.dom import minidom
 from nipy.core.api import Image, vox2mni, rollimg, xyz_affine, as_xyz_image
 import argparse
 import textwrap
 import matplotlib
 
-matplotlib.use('TkAgg')  
-
-
 pd.options.mode.chained_assignment = None  # default='warn'
-
-
 
 def get_layer_name_dict(fsl_xml):
     xmldoc = minidom.parse(fsl_xml)
@@ -220,17 +215,19 @@ if __name__ == '__main__':
         size = prac_vector.shape[0]
 
         array = np.zeros((len(current_files), size))
-        for num, current_file in enumerate(current_files):
-            print(current_file)
-            subject_vector = get_current_vector(current_file)[1]
-            print(subject_vector.shape)
-            array[num, :] = subject_vector
-        np.savetxt(join(dataLoc, 'all_data.txt'), array)
+        if isfile(join(dataLoc, 'all_data.txt')):
+            pass
+        else:
+            for num, current_file in enumerate(current_files):
+                print(current_file)
+                current_file_root = dirname(current_file)
+                file_name = basename(current_file)
+                if not isfile(join(current_file_root, file_name+'_clean.txt')):
+                    subject_vector = get_current_vector(current_file)[1]
+                    np.savetxt(join(current_file_root, file_name+'_clean.txt'), subject_vector)
+                else:
+                    subject_vector = np.loadtxt(join(current_file_root, file_name+'_clean.txt'))
+                print(subject_vector.shape)
+                array[num, :] = subject_vector
+            np.savetxt(join(dataLoc, 'all_data.txt'), array)
 
-    #subject_vector, subject_vector_norm = get_current_vector(args.inputCSV)
-    #peak = peak_preprocessing(args.peaktxt)
-    #fig, axes = plt.subplots(ncols=3, figsize=(10,10))
-    #axes[0].plot(subject_vector)
-    #axes[1].plot(subject_vector_norm)
-    #axes[2].plot(peak.T)
-    #plt.show()
