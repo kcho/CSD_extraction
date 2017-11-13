@@ -211,6 +211,8 @@ if __name__ == '__main__':
 
         # list of csv files in the dataLoc
         current_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('csv')]
+        peak_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('peak.txt')]
+
         
         # estimate array size
         prac_vector = get_current_vector(current_files[0])[1]
@@ -244,4 +246,34 @@ if __name__ == '__main__':
 
             #merge all data from the subjects in the dataLoc
             np.savetxt(join(dataLoc, 'all_data.txt'), array)
+        else:
+            print('passing', dataLoc)
 
+
+        # if the type_group has merged data available
+        if not isfile(join(dataLoc, 'all_peaks.txt')):
+            # for every current_file in the type_group location
+            for num, peak_file in enumerate(peak_files):
+                print(peak_file)
+                peak_file_root = dirname(peak_file)
+                file_name = basename(peak_file)
+                array_file = join(peak_file_root, file_name+'_clean.txt')
+
+                if not isfile(array_file):
+                    print('subject vector will be estimated')
+                    subject_vector = peak_preprocessing(current_file)[1]
+                    np.savetxt(array_file, subject_vector)
+                else:
+                    print('subject vector will be loaded')
+                    subject_vector = np.loadtxt(array_file)
+
+                # concatenate the subject vector into the array
+                try:
+                    array[num, :] = subject_vector
+                except:
+                    print(peak_file + ' has different size')
+
+            #merge all data from the subjects in the dataLoc
+            np.savetxt(join(dataLoc, 'all_peaks.txt'), array)
+        else:
+            print('passing', dataLoc)
