@@ -138,18 +138,25 @@ def get_current_vector(csv_location):
     return subject_vector, subject_vector_norm
 
 def peak_preprocessing(textfile):
-    if 'Ctrl' in textfile: 
-        df = pd.read_csv(textfile, #skipfooter=1,
-                         sep='\t', 
-                         skiprows=5, 
-                         names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
-                         encoding='ISO-8859-1')
-    else:
-        df = pd.read_csv(textfile, #skipfooter=1,
-                         sep='\t', 
-                         skiprows=6, 
-                         names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
-                         encoding='ISO-8859-1')
+    with open(textfile, 'r') as f:
+        lines = f.readlines()
+        for num, line in enumerate(lines):
+            if 'channel label' in line:
+                break
+
+    #if 'Ctrl' in textfile: 
+    #    df = pd.read_csv(textfile, #skipfooter=1,
+    #                     sep='\t', 
+    #                     skiprows=5, 
+    #                     names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
+    #                     encoding='ISO-8859-1')
+    #else:
+
+    df = pd.read_csv(textfile, #skipfooter=1,
+                     sep='\t', 
+                     skiprows=num, 
+                     names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
+                     encoding='ISO-8859-1')
 
     #MGFP1 has only minmax and latency
     df.loc[df['channel']=='MGFP1', 'minmax'] = df.loc[df['channel']=='MGFP1', 'x']
@@ -257,8 +264,15 @@ if __name__ == '__main__':
             #merge all data from the subjects in the dataLoc
             np.savetxt(join(dataLoc, 'all_data.txt'), array)
         else:
-            print('passing', dataLoc)
+            print('Current estimation completed', join(dataLoc, 'all_data.txt'))
 
+
+        # estimate array size
+        prac_vector = peak_preprocessing(peak_files[0])[1]
+        size = prac_vector.shape[1]
+
+        # make empty array
+        array = np.zeros((len(current_files), size))
 
         # if the type_group has merged data available
         if not isfile(join(dataLoc, 'all_peaks.txt')):
@@ -269,21 +283,23 @@ if __name__ == '__main__':
                 file_name = basename(peak_file)
                 array_file = join(peak_file_root, file_name+'_clean.txt')
 
-                if not isfile(array_file):
-                    print('subject vector will be estimated')
-                    subject_vector = peak_preprocessing(peak_file)
-                    np.savetxt(array_file, subject_vector)
-                else:
-                    print('subject vector will be loaded')
-                    subject_vector = np.loadtxt(array_file)
+                #if not isfile(array_file):
+                print('subject vector will be estimated')
+                subject_vector = peak_preprocessing(peak_file)[1]
+                np.savetxt(array_file, subject_vector)
+                #else:
+                #    print('subject vector will be loaded')
+                #    subject_vector = np.loadtxt(array_file)
 
                 # concatenate the subject vector into the array
                 try:
                     array[num, :] = subject_vector
                 except:
-                    print(peak_file + ' has different size')
+                    print(peak_file, '***********')
+                    print(subject_vector.shape)
+                #    print(peak_file + ' has different size')
 
             #merge all data from the subjects in the dataLoc
             np.savetxt(join(dataLoc, 'all_peaks.txt'), array)
         else:
-            print('passing', dataLoc)
+            print('Peak estimation completed', join(dataLoc, 'all_peaks.txt'))
