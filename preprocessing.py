@@ -138,11 +138,18 @@ def get_current_vector(csv_location):
     return subject_vector, subject_vector_norm
 
 def peak_preprocessing(textfile):
-    df = pd.read_csv(textfile, #skipfooter=1,
-                     sep='\t', 
-                     skiprows=5, 
-                     names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
-                     encoding='ISO-8859-1')
+    if 'Ctrl' in textfile: 
+        df = pd.read_csv(textfile, #skipfooter=1,
+                         sep='\t', 
+                         skiprows=5, 
+                         names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
+                         encoding='ISO-8859-1')
+    else:
+        df = pd.read_csv(textfile, #skipfooter=1,
+                         sep='\t', 
+                         skiprows=6, 
+                         names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
+                         encoding='ISO-8859-1')
 
     #MGFP1 has only minmax and latency
     df.loc[df['channel']=='MGFP1', 'minmax'] = df.loc[df['channel']=='MGFP1', 'x']
@@ -154,7 +161,7 @@ def peak_preprocessing(textfile):
                       value_name='value', 
                       value_vars=['minmax', 'latency']).set_index(['channel', 'data']).T
 
-    return df_melt.values
+    return df_melt, df_melt.values
 
 def get_type_group_dict(dataLoc):
     dirs = os.listdir(dataLoc)
