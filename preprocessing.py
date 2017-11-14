@@ -264,7 +264,7 @@ if __name__ == '__main__':
 
                 if not isfile(array_file):
                     print('subject vector will be estimated')
-                    subject_vector = peak_preprocessing(current_file)[1]
+                    subject_vector = peak_preprocessing(peak_file)
                     np.savetxt(array_file, subject_vector)
                 else:
                     print('subject vector will be loaded')
