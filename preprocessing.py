@@ -192,6 +192,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-p', '--peaktxt',
         help='Peak text')
+    parser.add_argument(
+        '-d', '--inputdir',
+        help='Directory location where all subdirectories are saved')
     #parser.add_argument(
         #'-c', '--count',
         #help='count files with the ext in each directory',
@@ -202,7 +205,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Data location
-    dataLoc = '/Volumes/TOSHIBA EXT'
+    dataLoc = args.inputdir
     type_group_dict = get_type_group_dict(dataLoc)
     print(type_group_dict)
 
