@@ -144,6 +144,7 @@ def peak_preprocessing(textfile):
             if 'channel label' in line:
                 break
 
+    num = num + 1 
     #if 'Ctrl' in textfile: 
     #    df = pd.read_csv(textfile, #skipfooter=1,
     #                     sep='\t', 
@@ -220,86 +221,85 @@ if __name__ == '__main__':
 
     # Data location
     dataLoc = args.inputdir
-    type_group_dict = get_type_group_dict(dataLoc)
-    print(type_group_dict)
+    #type_group_dict = get_type_group_dict(dataLoc)*/
+    #print(type_group_dict)*/
 
-    for type_group, dataLoc in type_group_dict.items():
-        print(type_group)
+    #for type_group, dataLoc in type_group_dict.items():
+        #print(type_group)
 
-        # list of csv files in the dataLoc
-        current_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('csv')]
-        peak_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('peak.txt')]
-
+    # list of csv files in the dataLoc
+    current_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('csv')]
+    peak_files = [join(dataLoc, x) for x in os.listdir(dataLoc) if x.endswith('peak.txt')]
         
-        # estimate array size
-        prac_vector = get_current_vector(current_files[0])[1]
-        size = prac_vector.shape[0]
+    # estimate array size
+    prac_vector = get_current_vector(current_files[0])[1]
+    size = prac_vector.shape[0]
 
-        # make empty array
-        array = np.zeros((len(current_files), size))
+    # make empty array
+    array = np.zeros((len(current_files), size))
 
-        # if the type_group has merged data available
-        if not isfile(join(dataLoc, 'all_data.txt')):
-            # for every current_file in the type_group location
-            for num, current_file in enumerate(current_files):
-                print(current_file)
-                current_file_root = dirname(current_file)
-                file_name = basename(current_file)
-                array_file = join(current_file_root, file_name+'_clean.txt')
+    # if the type_group has merged data available
+    if not isfile(join(dataLoc, 'all_data.txt')):
+        # for every current_file in the type_group location
+        for num, current_file in enumerate(current_files):
+            print(current_file)
+            current_file_root = dirname(current_file)
+            file_name = basename(current_file)
+            array_file = join(current_file_root, file_name+'_clean')
 
-                if not isfile(array_file):
-                    print('subject vector will be estimated')
-                    subject_vector = get_current_vector(current_file)[1]
-                    np.savetxt(array_file, subject_vector)
-                else:
-                    print('subject vector will be loaded')
-                    subject_vector = np.loadtxt(array_file)
+            if not isfile(array_file):
+                print('subject vector will be estimated')
+                subject_vector = get_current_vector(current_file)[1]
+                np.save(array_file, subject_vector)
+            else:
+                print('subject vector will be loaded')
+                subject_vector = np.loadtxt(array_file)
 
-                # concatenate the subject vector into the array
-                try:
-                    array[num, :] = subject_vector
-                except:
-                    print(current_file + ' has different size')
+            # concatenate the subject vector into the array
+            try:
+                array[num, :] = subject_vector
+            except:
+                print(current_file + ' has different size')
 
-            #merge all data from the subjects in the dataLoc
-            np.savetxt(join(dataLoc, 'all_data.txt'), array)
-        else:
-            print('Current estimation completed', join(dataLoc, 'all_data.txt'))
+        #merge all data from the subjects in the dataLoc
+        np.savetxt(join(dataLoc, 'all_data.txt'), array)
+    else:
+        print('Current estimation completed', join(dataLoc, 'all_data.txt'))
 
 
-        # estimate array size
-        prac_vector = peak_preprocessing(peak_files[0])[1]
-        size = prac_vector.shape[1]
+    # estimate array size
+    prac_vector = peak_preprocessing(peak_files[0])[1]
+    size = prac_vector.shape[1]
 
-        # make empty array
-        array = np.zeros((len(current_files), size))
+    # make empty array
+    array = np.zeros((len(current_files), size))
 
-        # if the type_group has merged data available
-        if not isfile(join(dataLoc, 'all_peaks.txt')):
-            # for every current_file in the type_group location
-            for num, peak_file in enumerate(peak_files):
-                print(peak_file)
-                peak_file_root = dirname(peak_file)
-                file_name = basename(peak_file)
-                array_file = join(peak_file_root, file_name+'_clean.txt')
+    # if the type_group has merged data available
+    if not isfile(join(dataLoc, 'all_peaks.txt')):
+        # for every current_file in the type_group location
+        for num, peak_file in enumerate(peak_files):
+            print(peak_file)
+            peak_file_root = dirname(peak_file)
+            file_name = basename(peak_file)
+            array_file = join(peak_file_root, file_name+'_clean')
 
-                #if not isfile(array_file):
+            if not isfile(array_file):
                 print('subject vector will be estimated')
                 subject_vector = peak_preprocessing(peak_file)[1]
-                np.savetxt(array_file, subject_vector)
-                #else:
-                #    print('subject vector will be loaded')
-                #    subject_vector = np.loadtxt(array_file)
+                np.save(array_file, subject_vector)
+            else:
+                print('subject vector will be loaded')
+                subject_vector = np.loadtxt(array_file)
 
-                # concatenate the subject vector into the array
-                try:
-                    array[num, :] = subject_vector
-                except:
-                    print(peak_file, '***********')
-                    print(subject_vector.shape)
-                #    print(peak_file + ' has different size')
+            # concatenate the subject vector into the array
+            try:
+                array[num, :] = subject_vector
+            except:
+                print(peak_file, '***********')
+                print(subject_vector.shape)
+                print(peak_file + ' has different size')
 
-            #merge all data from the subjects in the dataLoc
-            np.savetxt(join(dataLoc, 'all_peaks.txt'), array)
-        else:
-            print('Peak estimation completed', join(dataLoc, 'all_peaks.txt'))
+        #merge all data from the subjects in the dataLoc
+        np.savetxt(join(dataLoc, 'all_peaks.txt'), array)
+    else:
+        print('Peak estimation completed', join(dataLoc, 'all_peaks.txt'))
