@@ -145,6 +145,7 @@ def peak_preprocessing(textfile):
                 break
 
     num = num + 1 
+    print(num)
     #if 'Ctrl' in textfile: 
     #    df = pd.read_csv(textfile, #skipfooter=1,
     #                     sep='\t', 
@@ -159,6 +160,7 @@ def peak_preprocessing(textfile):
                      names=['channel', 'x', 'y', 'z', 'minmax', 'latency'],
                      encoding='ISO-8859-1')
 
+    print(df)
     #MGFP1 has only minmax and latency
     df.loc[df['channel']=='MGFP1', 'minmax'] = df.loc[df['channel']=='MGFP1', 'x']
     df.loc[df['channel']=='MGFP1', 'latency'] = df.loc[df['channel']=='MGFP1', 'y']
