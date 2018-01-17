@@ -164,6 +164,8 @@ def peak_preprocessing(textfile):
     #MGFP1 has only minmax and latency
     df.loc[df['channel']=='MGFP1', 'minmax'] = df.loc[df['channel']=='MGFP1', 'x']
     df.loc[df['channel']=='MGFP1', 'latency'] = df.loc[df['channel']=='MGFP1', 'y']
+    df.loc[df['channel']=='MGFP1', 'x'] = None
+    df.loc[df['channel']=='MGFP1', 'y'] = None
 
     df_melt = pd.melt(df, 
                       id_vars='channel', 
